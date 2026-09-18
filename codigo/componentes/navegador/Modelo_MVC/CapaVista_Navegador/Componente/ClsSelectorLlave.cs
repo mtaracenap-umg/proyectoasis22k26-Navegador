@@ -34,7 +34,7 @@ namespace CapaVista_Navegador
                 List<string> Nombres = Esquema.ConvertAll(Columna => Columna.Nombre);
 
                 Elegidas = NavegadorFuncMostrarSelector(
-                    "No se pudo detectar automáticamente la llave primaria de '" + Tabla + "'.\nSeleccione la o las columnas:",
+                    "No se pudo detectar automÃ¡ticamente la llave primaria de '" + Tabla + "'.\nSeleccione la o las columnas:",
                     Nombres);
 
                 _ClavesManualesPorTabla[Tabla] = Elegidas;

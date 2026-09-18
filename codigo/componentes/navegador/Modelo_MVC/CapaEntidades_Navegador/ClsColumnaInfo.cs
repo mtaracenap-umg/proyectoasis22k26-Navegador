@@ -4,9 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
-// Jose Javier Torres - 0901-23-1091 16/09/2026
-
 namespace CapaEntidades_Navegador
 {
     // Guarda toda la info de una Columna en un solo objeto, la usan las 3 capas
@@ -26,4 +23,3 @@ namespace CapaEntidades_Navegador
         public string ColumnaFK { get; set; }
     }
 }
-// Jose Javier Torres - 0901-23-1091 16/09/2026
