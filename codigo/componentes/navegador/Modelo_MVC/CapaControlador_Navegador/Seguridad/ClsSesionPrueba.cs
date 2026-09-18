@@ -23,7 +23,7 @@ namespace CapaControlador_Navegador
         }
 
         // Cambiar esta línea a Supervisor u Operativo para probar cada rol.
-        private const UsuarioDemo UsuarioPrueba = UsuarioDemo.Administrador;
+        private const UsuarioDemo UsuarioPrueba = UsuarioDemo.Supervisor;
 
         // Según el usuario elegido arriba, llena la sesión con su Id, nombre y rol reales.
         public static void NavegadorMetIniciarSesionPrueba()
