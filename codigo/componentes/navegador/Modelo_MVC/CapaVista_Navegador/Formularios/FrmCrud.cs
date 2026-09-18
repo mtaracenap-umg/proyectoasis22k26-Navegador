@@ -12,10 +12,7 @@ namespace CapaVista_Navegador
     public partial class FrmCrud : Form
     {
         // CAMBIAR AQUÍ MANUALMENTE LA TABLA A LA QUE SE DESEA HACER CRUD
-        // Inicio cambio - Gabriel André Guillén Pocón - 0901-23-1998
-        // Tabla real que existe en la base de datos de Seguridad (dbSistemaEmbutidos).
-        private string _NombreTabla = "tblEmpleado";
-        // Fin cambio - Gabriel André Guillén Pocón - 0901-23-1998
+        private string _NombreTabla = "tbl_PruebaValidaciones";
 
         private ClsCrudEventos _Eventos;
 

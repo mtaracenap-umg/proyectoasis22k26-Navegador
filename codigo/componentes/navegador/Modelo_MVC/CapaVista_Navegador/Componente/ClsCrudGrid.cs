@@ -1,8 +1,7 @@
-﻿//Donald Estuardo Osorio Pérez 
+﻿//Aca comienza mi codigo
+//Donald Estuardo Osorio Pérez 
 //Carnet: 0901-23-17982
-//16/09/2026
-
-//aca comienza la creacion de mi codigo
+//18/09/2026
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,11 +11,17 @@ using CapaEntidades_Navegador;
 
 namespace CapaVista_Navegador
 {
-    // Se encarga del DataGridView: crearlo, mostrarlo, moverse entre filas
+    // Se encarga del DataGridView: crearlo, mostrarlo, moverse entre filas y sincronizar los controles
     public class ClsCrudGrid
     {
         // Guardamos el formulario donde se va a dibujar la tabla
         private Form _Formulario;
+
+        // Lista de controles del formulario mapeados con sus nombres de campo/columna
+        private Dictionary<string, Control> _MapaControles;
+
+        // Evento opcional para notificar la selección de fila hacia afuera si se requiere
+        public event EventHandler<DataGridViewRow> AlSeleccionarFila;
 
         // Propiedad para acceder a la tabla desde fuera si hace falta
         public DataGridView NavegadorDgvDatos { get; private set; }
@@ -24,6 +29,16 @@ namespace CapaVista_Navegador
         public ClsCrudGrid(Form Formulario)
         {
             this._Formulario = Formulario;
+            this._MapaControles = new Dictionary<string, Control>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        // Permite vincular un control (TextBox, Label, ComboBox, etc.) con el nombre del campo en la BD
+        public void NavegadorMetRegistrarControl(string NombreCampo, Control ControlFormulario)
+        {
+            if (!string.IsNullOrEmpty(NombreCampo) && ControlFormulario != null)
+            {
+                _MapaControles[NombreCampo] = ControlFormulario;
+            }
         }
 
         // Llena la tabla con los datos que vienen del DataTable y la hace visible
@@ -40,6 +55,12 @@ namespace CapaVista_Navegador
             // Bloqueamos las columnas para que el usuario no edite nada directo
             foreach (DataGridViewColumn Columna in NavegadorDgvDatos.Columns)
                 Columna.ReadOnly = true;
+
+            // Si hay datos, seleccionamos la primera fila y poblamos los controles
+            if (NavegadorDgvDatos.Rows.Count > 0)
+            {
+                NavegadorMetSeleccionar(0);
+            }
         }
 
         // Oculta la tabla si está creada
@@ -63,8 +84,71 @@ namespace CapaVista_Navegador
             NavegadorDgvDatos.BackgroundColor = Color.White;
             NavegadorDgvDatos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
+            // Suscripción al evento CellClick para actualizar datos al hacer clic en una fila
+            NavegadorDgvDatos.CellClick += NavegadorDgvDatos_CellClick;
+
             // Lo pegamos al formulario que recibimos en el constructor
             _Formulario.Controls.Add(NavegadorDgvDatos);
+        }
+
+        // Manejador del evento CellClick al hacer clic directamente en la tabla
+        private void NavegadorDgvDatos_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.RowIndex < NavegadorDgvDatos.Rows.Count)
+            {
+                NavegadorMetProcesarSeleccionFila(NavegadorDgvDatos.Rows[e.RowIndex]);
+            }
+        }
+
+        // Procesa la fila activa: llena controles (TextBox, Label, ComboBox, CheckBox) y dispara eventos
+        private void NavegadorMetProcesarSeleccionFila(DataGridViewRow Fila)
+        {
+            if (Fila == null) return;
+
+            // Actualizamos dinámicamente cada control registrado en el diccionario
+            foreach (KeyValuePair<string, Control> Par in _MapaControles)
+            {
+                string NombreCampo = Par.Key;
+                Control ControlForm = Par.Value;
+                string Valor = NavegadorFuncObtenerValor(Fila, NombreCampo);
+
+                NavegadorMetAsignarValorAControl(ControlForm, Valor);
+            }
+
+            // Notificamos si existe algún suscriptor externo
+            AlSeleccionarFila?.Invoke(this, Fila);
+        }
+
+        // Asigna el valor leído de la celda al tipo de control correspondiente
+        private void NavegadorMetAsignarValorAControl(Control ControlForm, string Valor)
+        {
+            if (ControlForm == null) return;
+
+            if (ControlForm is TextBox txt)
+            {
+                txt.Text = Valor;
+            }
+            else if (ControlForm is Label lbl)
+            {
+                lbl.Text = Valor;
+            }
+            else if (ControlForm is ComboBox cbo)
+            {
+                cbo.Text = Valor;
+                if (cbo.SelectedIndex == -1 && cbo.Items.Count > 0)
+                {
+                    cbo.SelectedValue = Valor;
+                }
+            }
+            else if (ControlForm is CheckBox chk)
+            {
+                chk.Checked = Valor == "1" || Valor.Equals("true", StringComparison.OrdinalIgnoreCase);
+            }
+            else if (ControlForm is DateTimePicker dtp)
+            {
+                if (DateTime.TryParse(Valor, out DateTime Fecha))
+                    dtp.Value = Fecha;
+            }
         }
 
         // Acomoda la posición y el tamaño de la tabla según el espacio disponible en pantalla
@@ -200,11 +284,14 @@ namespace CapaVista_Navegador
             {
                 NavegadorDgvDatos.FirstDisplayedScrollingRowIndex = Indice;
             }
+
+            // Carga de datos inmediata a los controles registrados al moverse por los botones
+            NavegadorMetProcesarSeleccionFila(NavegadorDgvDatos.Rows[Indice]);
         }
     }
 }
-//aca finaliza mi creacion de codigo
 
+//aca termina mi codigo
 //Donald Estuardo Osorio Pérez 
 //Carnet: 0901-23-17982
-//16/09/2026
+//18/09/2026
