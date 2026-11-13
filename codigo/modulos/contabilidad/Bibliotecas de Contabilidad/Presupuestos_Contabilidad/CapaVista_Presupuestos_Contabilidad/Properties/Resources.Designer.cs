@@ -48,6 +48,13 @@
             }
         }
 
+        internal static System.Drawing.Bitmap btn_consultar {
+            get {
+                object obj = ResourceManager.GetObject("btn_consultar", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap btn_eliminar {
             get {
                 object obj = ResourceManager.GetObject("btn_eliminar", resourceCulture);

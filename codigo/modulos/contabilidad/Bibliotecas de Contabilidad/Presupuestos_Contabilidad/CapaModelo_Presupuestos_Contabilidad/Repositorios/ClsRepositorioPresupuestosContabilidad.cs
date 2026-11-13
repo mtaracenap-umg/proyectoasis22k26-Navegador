@@ -81,6 +81,14 @@ namespace CapaModelo_Contabilidad.Repositorios
 
         public int ContabilidadFuncEliminar(ClsPresupuestoContabilidad Entidad)
         {
+            // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+            return ContabilidadFuncEliminar(Entidad, null);
+        }
+
+        // Da de baja y corre un paso extra antes de confirmar
+        public int ContabilidadFuncEliminar(ClsPresupuestoContabilidad Entidad, Action<OdbcConnection, OdbcTransaction> AntesDeConfirmar)
+        {
+            // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
             // Inicio de cambio: Mario Taracena - 0901-23-9335 - 28/10/2026
             using (OdbcConnection Conexion = ContabilidadFuncObtenerConexion())
             {
@@ -91,6 +99,9 @@ namespace CapaModelo_Contabilidad.Repositorios
                     {
                         ContabilidadFuncEjecutar(Conexion, Transaccion, _DesactivarDetalle, Entidad.IdPresupuesto);
                         int Filas = ContabilidadFuncEjecutar(Conexion, Transaccion, _DesactivarEncabezado, Entidad.IdPresupuesto);
+                        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+                        if (Filas > 0 && AntesDeConfirmar != null) AntesDeConfirmar(Conexion, Transaccion);
+                        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
                         Transaccion.Commit();
                         return Filas;
                     }
@@ -166,7 +177,29 @@ namespace CapaModelo_Contabilidad.Repositorios
             return Modulos.ToArray();
         }
 
-        private int ContabilidadFuncGuardar(ClsPresupuestoContabilidad Entidad, bool Nuevo)
+        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+        // Guarda y corre un paso extra antes de confirmar
+        public int ContabilidadFuncGrabar(ClsPresupuestoContabilidad Entidad, bool Nuevo, Action<OdbcConnection, OdbcTransaction> AntesDeConfirmar)
+        {
+            return ContabilidadFuncGuardar(Entidad, Nuevo, AntesDeConfirmar);
+        }
+
+        // Pone al día lo gastado con lo que dicen las pólizas
+        public int ContabilidadFuncActualizarGastado(int IdPresupuesto, decimal Gastado)
+        {
+            return ContabilidadFuncEjecutarNonQuery(
+                "UPDATE tblPresupuestoEncabezado SET gastadoPresupuestoEncabezado = ? " +
+                "WHERE idPresupuestoEncabezado = ? AND is_active = TRUE AND gastadoPresupuestoEncabezado <> ?",
+                new List<OdbcParameter>
+                {
+                    new OdbcParameter("Gastado", OdbcType.Decimal) { Precision = 12, Scale = 4, Value = Gastado },
+                    new OdbcParameter("Presupuesto", OdbcType.Int) { Value = IdPresupuesto },
+                    new OdbcParameter("Anterior", OdbcType.Decimal) { Precision = 12, Scale = 4, Value = Gastado }
+                }, CommandType.Text);
+        }
+
+        private int ContabilidadFuncGuardar(ClsPresupuestoContabilidad Entidad, bool Nuevo, Action<OdbcConnection, OdbcTransaction> AntesDeConfirmar = null)
+        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
         {
             using (OdbcConnection Conexion = ContabilidadFuncObtenerConexion())
             {
@@ -216,6 +249,9 @@ namespace CapaModelo_Contabilidad.Repositorios
                                 if (Comando.ExecuteNonQuery() == 0)
                                     throw new InvalidOperationException("El módulo '" + Partida.Modulo + "' no existe o está inactivo.");
                             }
+                        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+                        if (AntesDeConfirmar != null) AntesDeConfirmar(Conexion, Transaccion);
+                        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
                         Transaccion.Commit();
                         return 1;
                     }

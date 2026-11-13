@@ -2,6 +2,12 @@
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.37502.11
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestReportePresupuestos_Contabilidad", "TestReportePresupuestos_Contabilidad\TestReportePresupuestos_Contabilidad.csproj", "{AB154B71-7D33-42D5-95A8-DE75C8E9C477}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2676C937-C0E2-469E-B0E4-BE165DD1F08B} = {2676C937-C0E2-469E-B0E4-BE165DD1F08B}
+		{92316EDC-4BFE-4CA0-A33B-812F84B029AA} = {92316EDC-4BFE-4CA0-A33B-812F84B029AA}
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapaModelo_Presupuestos_Contabilidad", "CapaModelo_Presupuestos_Contabilidad\CapaModelo_Presupuestos_Contabilidad.csproj", "{EC6C968A-4723-4488-9769-28DD2BDABB6A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapaControlador_Presupuestos_Contabilidad", "CapaControlador_Presupuestos_Contabilidad\CapaControlador_Presupuestos_Contabilidad.csproj", "{2676C937-C0E2-469E-B0E4-BE165DD1F08B}"
@@ -26,6 +32,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB154B71-7D33-42D5-95A8-DE75C8E9C477}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB154B71-7D33-42D5-95A8-DE75C8E9C477}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB154B71-7D33-42D5-95A8-DE75C8E9C477}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB154B71-7D33-42D5-95A8-DE75C8E9C477}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC6C968A-4723-4488-9769-28DD2BDABB6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EC6C968A-4723-4488-9769-28DD2BDABB6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC6C968A-4723-4488-9769-28DD2BDABB6A}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -67,9 +67,12 @@ namespace CapaVista_Contabilidad
                 _Presupuestos = new System.Collections.Generic.List<ClsModeloPresupuestoContabilidad>();
                 ClsDialogosContabilidad.ContabilidadMetError(this, "No se pudieron consultar los presupuestos: " + Excepcion.Message);
             }
-            ContabilidadCboPresupuesto.DisplayMember = "Nombre";
+            // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+            // Quitar la fuente borra el campo a mostrar: se asigna despues
             ContabilidadCboPresupuesto.DataSource = null;
+            ContabilidadCboPresupuesto.DisplayMember = "Nombre";
             ContabilidadCboPresupuesto.DataSource = _Presupuestos;
+            // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
             ClsModeloPresupuestoContabilidad Elegido = _Presupuestos.Find(Presupuesto => Presupuesto.IdPresupuesto == Seleccionar)
                 ?? (_Presupuestos.Count > 0 ? _Presupuestos[0] : null);
             ContabilidadCboPresupuesto.SelectedItem = Elegido;
@@ -99,6 +102,10 @@ namespace CapaVista_Contabilidad
                         _Ejecucion = _Controlador.ContabilidadFuncEjecucion(Presupuesto.FechaInicio, Presupuesto.FechaCierre, Detalle);
                         _Tabla.ContabilidadMetCargar(_Ejecucion);
                         ContabilidadMetResumen(_Controlador.ContabilidadFuncTotalPresupuesto(Detalle), _Controlador.ContabilidadFuncTotalEjecutado(_Ejecucion));
+                        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+                        // Guarda lo ejecutado de las pólizas en el presupuesto
+                        _Controlador.ContabilidadFuncSincronizarGastado(Presupuesto, _Controlador.ContabilidadFuncTotalEjecutado(_Ejecucion));
+                        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
                     }
                 }
                 catch (Exception Excepcion)

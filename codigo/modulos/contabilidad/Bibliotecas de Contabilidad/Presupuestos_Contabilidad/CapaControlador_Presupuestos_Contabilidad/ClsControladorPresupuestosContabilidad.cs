@@ -24,6 +24,12 @@ using CapaModelo_Contabilidad.Repositorios;
 // Inicio de cambio: Mario Taracena - 0901-23-9335 - 27/10/2026
 using CapaModelo_Contabilidad.Entidades;
 // Fin de cambio: Mario Taracena - 0901-23-9335 - 27/10/2026
+// Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+using System.Data.Odbc;
+using System.Globalization;
+using CapaControlador_Seguridad;
+using CapaControlador_Seguridad.Objetos_de_valor;
+// Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
 
 // Inicio de cambio: Mario Taracena - 0901-23-9335 - 27/10/2026
 namespace CapaControlador_Contabilidad
@@ -161,10 +167,15 @@ namespace CapaControlador_Contabilidad
             };
             try
             {
+                // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+                Action<OdbcConnection, OdbcTransaction> Bitacora = ContabilidadFuncBitacora(Estado, Entidad);
+                // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
                 switch (Estado)
                 {
                     case EstadoEntidadContabilidad.Agregar:
-                        _Repositorio.ContabilidadFuncAgregar(Entidad);
+                        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+                        _Repositorio.ContabilidadFuncGrabar(Entidad, true, Bitacora);
+                        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
                         // Inicio de cambio: Mario Taracena - 0901-23-9335 - 28/10/2026
                         IdPresupuesto = Entidad.IdPresupuesto;
                         Mensaje = "Presupuesto guardado correctamente.";
@@ -172,7 +183,9 @@ namespace CapaControlador_Contabilidad
                         break;
                     case EstadoEntidadContabilidad.Modificar:
                         // Inicio de cambio: Mario Taracena - 0901-23-9335 - 28/10/2026
-                        if (_Repositorio.ContabilidadFuncEditar(Entidad) == 0)
+                        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+                        if (_Repositorio.ContabilidadFuncGrabar(Entidad, false, Bitacora) == 0)
+                        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
                         {
                             Mensaje = "El presupuesto ya no existe o fue eliminado.";
                             return false;
@@ -182,7 +195,9 @@ namespace CapaControlador_Contabilidad
                         break;
                     case EstadoEntidadContabilidad.Borrar:
                         // Inicio de cambio: Mario Taracena - 0901-23-9335 - 28/10/2026
-                        if (_Repositorio.ContabilidadFuncEliminar(Entidad) == 0)
+                        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+                        if (_Repositorio.ContabilidadFuncEliminar(Entidad, Bitacora) == 0)
+                        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
                         {
                             Mensaje = "El presupuesto ya no existe o fue eliminado.";
                             return false;
@@ -200,5 +215,59 @@ namespace CapaControlador_Contabilidad
                 return false;
             }
         }
+
+        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+        // Tabla que queda en la bitácora
+        public const string TablaBitacora = "tblPresupuestoEncabezado";
+
+        // Pone al día lo gastado guardado con lo que dicen las pólizas
+        public bool ContabilidadFuncSincronizarGastado(ClsModeloPresupuestoContabilidad Presupuesto, decimal Ejecutado)
+        {
+            if (Presupuesto == null || Presupuesto.IdPresupuesto <= 0) return false;
+            decimal Gastado = Math.Min(ClsLimitesContabilidad.MaximoMonetario, Math.Max(0m, Ejecutado));
+            if (Gastado == Presupuesto.Gastado) return false;
+            try
+            {
+                if (_Repositorio.ContabilidadFuncActualizarGastado(Presupuesto.IdPresupuesto, Gastado) == 0) return false;
+                Presupuesto.Gastado = Gastado;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // Texto corto del presupuesto para la bitácora
+        public static string ContabilidadFuncResumenBitacora(string Nombre, DateTime Inicio, DateTime? Cierre, int Partidas, decimal Total, decimal Gastado)
+        {
+            CultureInfo Cultura = CultureInfo.GetCultureInfo("es-GT");
+            return "'" + Nombre + "', vigencia " + Inicio.ToString("dd/MM/yyyy")
+                + (Cierre.HasValue ? " al " + Cierre.Value.ToString("dd/MM/yyyy") : " sin cierre") + ", " + Partidas
+                + (Partidas == 1 ? " partida" : " partidas") + ", asignado Q " + Total.ToString("N2", Cultura)
+                + ", ejecutado Q " + Gastado.ToString("N2", Cultura);
+        }
+
+        // Prepara el registro de bitácora que se graba con el cambio
+        private Action<OdbcConnection, OdbcTransaction> ContabilidadFuncBitacora(EstadoEntidadContabilidad Estado, ClsPresupuestoContabilidad Entidad)
+        {
+            if (!ClsSesionSeguridad.HaySesionActiva) return null;
+            ClsPresupuestoContabilidad Anterior = Estado == EstadoEntidadContabilidad.Agregar ? null
+                : _Repositorio.ContabilidadFuncObtenerTodos().FirstOrDefault(Presupuesto => Presupuesto.IdPresupuesto == Entidad.IdPresupuesto);
+            string Accion = Estado == EstadoEntidadContabilidad.Agregar ? "INSERT" : Estado == EstadoEntidadContabilidad.Modificar ? "UPDATE" : "DELETE";
+            return (Conexion, Transaccion) =>
+            {
+                string Ahora = ContabilidadFuncResumenBitacora(Entidad.Nombre, Entidad.FechaInicio, Entidad.FechaCierre, Entidad.Detalle.Count,
+                    Entidad.Total, Entidad.Gastado);
+                string Antes = Anterior == null ? string.Empty : ContabilidadFuncResumenBitacora(Anterior.Nombre, Anterior.FechaInicio,
+                    Anterior.FechaCierre, Anterior.Detalle.Count, Anterior.Total, Anterior.Gastado);
+                string Detalles = Estado == EstadoEntidadContabilidad.Agregar ? "Presupuesto creado: " + Ahora
+                    : Estado == EstadoEntidadContabilidad.Modificar ? "Presupuesto modificado. Antes: " + Antes + ". Ahora: " + Ahora
+                    : "Presupuesto dado de baja: " + (Anterior == null ? "'" + Entidad.Nombre + "'" : Antes);
+                new ClsModeloBitacora().SeguridadMetRegistrarBitacora(ClsSesionSeguridad.IdUsuario, Accion, TablaBitacora,
+                    Entidad.IdPresupuesto, Detalles, null, Conexion, Transaccion);
+            };
+        }
+        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
     }
 }

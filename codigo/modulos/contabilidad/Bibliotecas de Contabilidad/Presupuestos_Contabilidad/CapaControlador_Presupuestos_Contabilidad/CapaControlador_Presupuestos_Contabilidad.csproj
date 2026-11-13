@@ -45,6 +45,12 @@
       <HintPath>..\CapaModelo_Presupuestos_Contabilidad\bin\$(Configuration)\CapaModelo_Presupuestos_Contabilidad.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <!-- Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026 -->
+    <Reference Include="CapaControlador_Seguridad">
+      <HintPath>..\..\..\..\..\componentes\seguridad\Seguridad\CapaControlador_Seguridad\bin\Debug\CapaControlador_Seguridad.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <!-- Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026 -->
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -55,5 +61,10 @@
     <Compile Include="Modelos\ClsModeloPresupuestoContabilidad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <!-- Inicio de cambio: Mario Taracena - 0901-23-9335 - 11/11/2026 -->
+  <ItemGroup>
+    <Compile Include="ClsControladorReportePresupuestosContabilidad.cs" />
+  </ItemGroup>
+  <!-- Fin de cambio: Mario Taracena - 0901-23-9335 - 11/11/2026 -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

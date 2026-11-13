@@ -15,6 +15,9 @@
 using System;
 using System.Collections.Generic;
 // Fin de cambio: Mario Taracena - 0901-23-9335 - 28/10/2026
+// Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+using System.Data.Odbc;
+// Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
 
 // Inicio de cambio: Mario Taracena - 0901-23-9335 - 27/10/2026
 using CapaModelo_Contabilidad.Entidades;
@@ -28,5 +31,16 @@ namespace CapaModelo_Contabilidad.Contratos
         // Inicio de cambio: Mario Taracena - 0901-23-9335 - 28/10/2026
         Dictionary<string, decimal> ContabilidadFuncObtenerEjecutado(DateTime Desde, DateTime Hasta);
         // Fin de cambio: Mario Taracena - 0901-23-9335 - 28/10/2026
+
+        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+        // Guarda y corre un paso extra antes de confirmar
+        int ContabilidadFuncGrabar(ClsPresupuestoContabilidad Entidad, bool Nuevo, Action<OdbcConnection, OdbcTransaction> AntesDeConfirmar);
+
+        // Da de baja y corre un paso extra antes de confirmar
+        int ContabilidadFuncEliminar(ClsPresupuestoContabilidad Entidad, Action<OdbcConnection, OdbcTransaction> AntesDeConfirmar);
+
+        // Pone al día lo gastado
+        int ContabilidadFuncActualizarGastado(int IdPresupuesto, decimal Gastado);
+        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
     }
 }

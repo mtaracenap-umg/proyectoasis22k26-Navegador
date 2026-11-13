@@ -51,6 +51,10 @@ namespace CapaVista_Contabilidad
             _Tabla.ContabilidadMetAsignarNavegacion(ContabilidadBtnInicio, ContabilidadBtnAnterior, ContabilidadBtnSiguiente, ContabilidadBtnFin);
             foreach (Control Campo in new Control[] { ContabilidadTxtNombrePresupuesto, ContabilidadDtpInicio, ContabilidadTxtNombre, ContabilidadCboModulo, ContabilidadNudCantidad })
                 _Validacion.ContabilidadMetObligatorio(Campo);
+            // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+            // Prepara el aviso del cierre antes que los demas eventos
+            _Validacion.ContabilidadFuncValidar(ContabilidadDtpCierre, null);
+            // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
             Disposed += (Remitente, Argumentos) => { _Tabla.Dispose(); _Validacion.Dispose(); };
             ClsPermisosMenuContabilidad.ContabilidadMetRestringir(ContabilidadBtnAgregar, Permisos.PuedeInsertar || Permisos.PuedeEditar);
             ClsPermisosMenuContabilidad.ContabilidadMetRestringir(ContabilidadBtnQuitar, Permisos.PuedeInsertar || Permisos.PuedeEditar);
@@ -177,9 +181,21 @@ namespace CapaVista_Contabilidad
             ContabilidadLblResumen.Text = "Partidas: " + _Detalle.Rows.Count + "     Total asignado: "
                 + Diseno.ContabilidadFuncMoneda(_Controlador.ContabilidadFuncTotalPresupuesto(_Detalle));
             ContabilidadBtnQuitar.Enabled = _Detalle.Rows.Count > 0;
-            ContabilidadBtnGuardar.Enabled = _HayCambios && _Detalle.Rows.Count > 0;
+            // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+            ContabilidadBtnGuardar.Enabled = ContabilidadFuncValidarFechas() && _HayCambios && _Detalle.Rows.Count > 0;
+            // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
             _Tabla.ContabilidadMetActualizar();
         }
+
+        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
+        // Marca en rojo el cierre si queda antes del inicio
+        private bool ContabilidadFuncValidarFechas()
+        {
+            string Error = ContabilidadDtpCierre.Checked
+                ? _Controlador.ContabilidadFuncErrorFechas(ContabilidadDtpInicio.Value, ContabilidadDtpCierre.Value) : string.Empty;
+            return _Validacion.ContabilidadFuncValidar(ContabilidadDtpCierre, Error);
+        }
+        // Fin de cambio: Mario Taracena - 0901-23-9335 - 12/11/2026
 
         // Inicio de cambio: Gabriel André Guillén Pocón - 0901-23-1998 - 11/11/2026
         // Abre la página de ayuda de esta ventana

@@ -58,5 +58,13 @@ namespace CapaVista_Contabilidad
                 ContabilidadMetAplicarTipografia(Elemento);
             }
         }
+
+        // Inicio de cambio: Mario Taracena - 0901-23-9335 - 11/11/2026
+        // Agrega el código del reporte
+        static ClsPresentacionContabilidad()
+        {
+            _Codigos["FrmReportePresupuestos"] = 10002;
+        }
+        // Fin de cambio: Mario Taracena - 0901-23-9335 - 11/11/2026
     }
 }
